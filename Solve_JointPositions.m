@@ -1,11 +1,16 @@
 function JointPos = Solve_JointPositions(linkParams, theta)
-    [t1, a1, a2, a3, a4] = deal(linkParams{:});
+    % extract link parameters
+    t1 = linkParams(1).theta;
+    a1 = linkParams(1).a;
+    a2 = linkParams(2).a;
+    a3 = linkParams(3).a;
+    a4 = linkParams(4).a;
     
     % DH table with indices of a, d, alpha, theta
     DH = [a1 0  0    t1;
-          a2 0  pi/2 theta(2);
-          a3 0  0    theta(3);
-          a4 0  0    theta(4);];
+          a2 0  pi/2 theta(1);
+          a3 0  0    theta(2);
+          a4 0  0    theta(3);];
 
     H_0_1 = dhTransform(DH(1,1), DH(1,2), DH(1,3), DH(1,4));
     H_1_2 = dhTransform(DH(2,1), DH(2,2), DH(2,3), DH(2,4));

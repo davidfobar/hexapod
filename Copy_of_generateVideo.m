@@ -1,10 +1,10 @@
-function generateVideo(Q, legs, title_text, filename)
-    nTimeSteps = size(Q, 2);
-    nLegs      = length(legs);
-    nJoints    = length(legs(1).linkParams);
+function generateVideo(t, linkParams,  title_text, filename)
+    nTimeSteps = size(t{1}, 1);
+    nLegs = size(t,2);
+    nJoints = size(t{1},2);
 
     % generate a 3d plot that shows the motion of the leg
-    f1 = figure('Position', [200 200 1200 800], 'Color','w', 'Resize','off'); 
+    f1 = figure('Position', [200 200 1200 800], 'Color','w'); 
     ax = axes('Parent',f1);
     hold(ax, 'on');
     grid(ax, 'on');
@@ -14,21 +14,26 @@ function generateVideo(Q, legs, title_text, filename)
     ax.ZColor = 'k';
 
     view(3);
-    axis(ax, [-300, 300, -300, 300, -300, 300]);
-    axis(ax, 'manual');
+    axis([-300,300, -300,300, -300,300]);
     xlabel('x', Color='k'); ylabel('y', Color='k'); zlabel('z', Color='k');
     title(sprintf('End-Effector Cartesian Path with Orientation for %s', title_text), Color='k');
 
     v = VideoWriter(sprintf('./%s_arm.avi', filename),'Motion JPEG AVI');
     open(v);
-    colors = lines(nJoints); 
-    fixedSize = [];
+    colors = lines(4); 
     for i=1:nTimeSteps
-        cla(ax);        
-        hold(ax,'on');
+                
+        hold on;
 
         for j = 1:nLegs
-            P = Solve_JointPositions(legs(j).linkParams, Q(:,i,j));
+            t1_j = linkParams{1}(j);
+            a1_j = linkParams{2}(j);
+        
+            % build leg-specific parameters
+            linkParams_j = {t1_j, a1_j, linkParams{3}, linkParams{4}, linkParams{5}};
+
+            t_thisLeg = t{j};
+            P = Solve_JointPositions(linkParams_j, t_thisLeg(i,:));
             % append the origin
             P = [ [0;0;0], P];
             
@@ -39,18 +44,15 @@ function generateVideo(Q, legs, title_text, filename)
                       '-', 'Color', colors(k,:), 'LineWidth', 2);
             end
         end
-        %drawnow;
-        frame = getframe(f1);
+        hold off;
 
-        if isempty(fixedSize)
-            fixedSize = size(frame.cdata);
-        else
-            [h,w,~] = size(frame.cdata);
-            if h ~= fixedSize(1) || w ~= fixedSize(2)
-                frame.cdata = imresize(frame.cdata, fixedSize(1:2));
-            end
-        end
+        frame = getframe(f1);
         writeVideo(v,frame);
+        pause(1/30);
+
+        ax = gca;
+        cla(ax);
     end
     close(v);
+
 end

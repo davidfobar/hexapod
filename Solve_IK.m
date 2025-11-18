@@ -1,9 +1,13 @@
-function t_IK = Solve_IK(linkParams, T)
-    [t1, a1, a2, a3, a4] = deal(linkParams{:});
+function [t2, t3, t4] = Solve_IK(linkList, P, th_last)
+    % extract link parameters
+    t1 = linkList(1).theta;
+    a1 = linkList(1).a;
+    a2 = linkList(2).a;
+    a3 = linkList(3).a;
+    a4 = linkList(4).a;
 
     % extract the end effector position
-    p_0_4 = T(1:3,4); 
-    px = p_0_4(1); py = p_0_4(2); pz = p_0_4(3);
+    px = P(1); py = P(2); pz = P(3);
     
     % Solve for theta 2
     p      = [px; py];
@@ -25,4 +29,15 @@ function t_IK = Solve_IK(linkParams, T)
 
     t_IK = [t1 t2 t3(1) t4(1);
             t1 t2 t3(2) t4(2);];
+
+    % if th_last is provided, only return the results for that solution
+    if exist('th_last', 'var')
+        errs = vecnorm(th_last - t_IK);
+        [~, idx]  = min(errs);
+        t3 = t3(idx);
+        t4 = t4(idx);
+    else
+        t3 = t3(2);
+        t4 = t4(2);
+    end
 end
