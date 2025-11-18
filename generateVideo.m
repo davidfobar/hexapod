@@ -1,4 +1,4 @@
-function generateVideo(Q, legs, title_text, filename)
+function generateVideo(Q, legs)
     nTimeSteps = size(Q, 2);
     nLegs      = length(legs);
     nJoints    = length(legs(1).linkParams);
@@ -17,9 +17,9 @@ function generateVideo(Q, legs, title_text, filename)
     axis(ax, [-300, 300, -300, 300, -300, 300]);
     axis(ax, 'manual');
     xlabel('x', Color='k'); ylabel('y', Color='k'); zlabel('z', Color='k');
-    title(sprintf('End-Effector Cartesian Path with Orientation for %s', title_text), Color='k');
+    title('3x Tripod Gait Cycles', Color='k');
 
-    v = VideoWriter(sprintf('./%s_arm.avi', filename),'Motion JPEG AVI');
+    v = VideoWriter('./tripodGait.avi','Motion JPEG AVI');
     open(v);
     colors = lines(nJoints); 
     fixedSize = [];

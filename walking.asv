@@ -23,7 +23,7 @@ nActiveJoints = 3;
 wayPointTimes = [0, 0.5, 1.0, 1.5, 2.0];
 transPercent  = 0.20;
 nStepCycles   = 3;
-nTimeSteps    = 300;
+nTimeSteps    = 100;
 totalTime     = wayPointTimes(end);
 ts = linspace(0, nStepCycles*totalTime, nTimeSteps);
 
@@ -60,20 +60,14 @@ for i=1:nLegs
         end
 
         [p,v,a] = constAccelInterp(t, trajectory, transPercent);
-        if j<= nPlotPoints && i == 5
-            ps(:, j) = p;
-            vs(:, j) = v;
-            as(:, j) = a;
-        end
+        ps(:, j) = p;
+        vs(:, j) = v;
+        as(:, j) = a;
     
         [t2, t3, t4] = Solve_IK(legs(i).linkParams, p);
         Q(:,j,i) = [t2;t3;t4];
     end
 end
-
-generateVideo(Q, legs);
-Q = Q(:,1:nPlotPoints,5);
-ts = ts(1:nPlotPoints);
 
 figure;
 plot3(ps(1,:), ps(2,:), ps(3,:), 'LineWidth', 2);
@@ -84,34 +78,13 @@ zlabel('Z');
 title('End-Effector Trajectory');
 
 figure;
-plot(ts, vs(1,:), 'LineWidth', 2); hold on;
-plot(ts, vs(2,:), 'LineWidth', 2);
-plot(ts, vs(3,:), 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Joint Angle Velocity (rad/s)');
-ylim([-110, 110]);
-legend('Coxa','Femur','Tibia');
-title('End-Effector Velocity for a Single Leg');
-grid on;
-
-figure;
-plot(ts, as(1,:), 'LineWidth', 2); hold on;
-plot(ts, as(2,:), 'LineWidth', 2);
-plot(ts, as(3,:), 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Joint Angle Acceleration (rad/s^2)');
-ylim([-1100, 1100]);
-legend('Coxa','Femur','Tibia');
-title('End-Effector Acceleration for a Single Leg');
-grid on;
-
-figure;
-plot(ts, Q(1,:), 'LineWidth', 2); hold on;
-plot(ts, Q(2,:), 'LineWidth', 2);
-plot(ts, Q(3,:), 'LineWidth', 2);
+plot(ts, Q(1,:,5), 'LineWidth', 2); hold on;
+plot(ts, Q(2,:,5), 'LineWidth', 2);
+plot(ts, Q(3,:,5), 'LineWidth', 2);
 xlabel('Time (s)');
 ylabel('Joint Angle (rad)');
 legend('Coxa','Femur','Tibia');
 title('Joint Actuator Angles for a Single Leg');
 grid on;
 
+%generateVideo(Q, legs);
