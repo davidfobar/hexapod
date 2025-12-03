@@ -16,6 +16,9 @@ function [t2, t3, t4] = Solve_IK(linkList, P, th_last)
     A      = norm(p - a1_vec);
     r      = norm(p);
     cos_t2 = (r^2-a1^2-A^2)/(2*a1*A);
+    if 1-cos_t2 < 1e-10
+        cos_t2 = 1;
+    end
     t2     = 2*atan2(sqrt(1-cos_t2^2), 1+cos_t2)*sign(cross);
 
     % Solve for theta 4
