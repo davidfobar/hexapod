@@ -14,7 +14,7 @@ function generateVideo(Q, legs)
     ax.ZColor = 'k';
 
     view(3);
-    axis(ax, [-300, 300, -300, 300, -300, 300]);
+    axis(ax, [-300, 300, -300, 300, -10, 200]);
     axis(ax, 'manual');
     xlabel('x', Color='k'); ylabel('y', Color='k'); zlabel('z', Color='k');
     title('3x Tripod Gait Cycles', Color='k');
@@ -23,14 +23,29 @@ function generateVideo(Q, legs)
     open(v);
     colors = lines(nJoints); 
     fixedSize = [];
+
+    % Ground plane
+    groundSize = 400;
+    [Xg, Yg] = meshgrid([-groundSize groundSize], [-groundSize groundSize]);
+    Zg = zeros(size(Xg));
+
     for i=1:nTimeSteps
         cla(ax);        
         hold(ax,'on');
 
+        % ground
+        surf(ax, Xg, Yg, Zg, ...
+             'FaceColor', [0.85 0.85 0.85], ...
+             'FaceAlpha', 0.4, ...
+             'EdgeColor', 'none');
+
         for j = 1:nLegs
             P = Solve_JointPositions(legs(j).linkParams, Q(:,i,j));
+
+            P(3,:) = P(3,:) + 50;
+
             % append the origin
-            P = [ [0;0;0], P];
+            P = [ [0;0;50], P];
             
             for k = 1:nJoints
                 plot3([P(1,k) P(1,k+1)], ...
