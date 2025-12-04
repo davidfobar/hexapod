@@ -27,6 +27,19 @@ nTimeSteps    = 300;
 totalTime     = wayPointTimes(end);
 ts = linspace(0, nStepCycles*totalTime, nTimeSteps);
 
+bodyPos = zeros(3,nTimeSteps);
+bodyRPY = zeros(3,nTimeSteps);
+
+%raise height from 20 to 50 and gradually roll during motion
+z_mean = 50;
+z_amp  = 5;
+for i = 1:nTimeSteps
+    t_local = mod(ts(i), totalTime);
+    bodyPos(3,i) = z_mean + z_amp * sin(2*pi*(t_local/totalTime));
+    bodyRPY(:,i) = [5*pi/180 * sin(2*pi*ts(i)/totalTime); 0;0;];
+end
+
+
 nPlotPoints = int16(nTimeSteps/nStepCycles);
 ps = zeros(nActiveJoints,nPlotPoints);
 vs = zeros(nActiveJoints,nPlotPoints);
@@ -46,7 +59,7 @@ footSweepDist    = 40;
 footDistFromCoxa = 100;
 
 for i=1:nLegs
-    trajectory = buildGaitTrajectory(wayPointTimes, bodyHeight, ...
+    trajectory = buildGaitTrajectory(wayPointTimes, ...
                         footLiftHeight, stepLength, footSweepDist, ...
                         footDistFromCoxa, legs(i).linkParams);
     for j=1:nTimeSteps
@@ -59,22 +72,35 @@ for i=1:nLegs
             end
         end
 
-        [p,v,a] = constAccelInterp(t, trajectory, transPercent);
+        [p_world,v,a] = constAccelInterp(t, trajectory, transPercent);
+
+        % Calculate the rotation matrix based on the body roll, pitch, and yaw
+        roll = bodyRPY(1,j);
+        pitch = bodyRPY(2,j);
+        yaw = bodyRPY(3,j);
+        R_WB = rotZ(yaw)*rotY(pitch)*rotX(roll);
+        p_WB = bodyPos(:,j);
+
+        % move the trajectory to the world frame
+        p_body = R_WB' * (p_world' - p_WB);
+
         if j<= nPlotPoints && i == 5
-            ps(:, j) = p;
+            ps(:, j) = p_world;
             vs(:, j) = v;
             as(:, j) = a;
         end
     
-        [t2, t3, t4] = Solve_IK(legs(i).linkParams, p);
+        [t2, t3, t4] = Solve_IK(legs(i).linkParams, p_body);
         Q(:,j,i) = [t2;t3;t4];
     end
 end
 
-generateVideo(Q, legs);
+generateVideo(Q, legs, bodyRPY, bodyPos);
 Q = Q(:,1:nPlotPoints,5);
 ts = ts(1:nPlotPoints);
 
+
+%%
 figure;
 plot3(ps(1,:), ps(2,:), ps(3,:), 'LineWidth', 2);
 grid on; axis equal;

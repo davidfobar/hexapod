@@ -1,4 +1,4 @@
-function generateVideo(Q, legs)
+function generateVideo(Q, legs, bodyRPY, bodyPos)
     nTimeSteps = size(Q, 2);
     nLegs      = length(legs);
     nJoints    = length(legs(1).linkParams);
@@ -39,13 +39,21 @@ function generateVideo(Q, legs)
              'FaceAlpha', 0.4, ...
              'EdgeColor', 'none');
 
+        % Calculate the rotation matrix based on the body roll, pitch, and yaw
+        roll = bodyRPY(1,i);
+        pitch = bodyRPY(2,i);
+        yaw = bodyRPY(3,i);
+        R_WB = rotZ(yaw)*rotY(pitch)*rotX(roll);
+        p_WB = bodyPos(:,i);
+
         for j = 1:nLegs
             P = Solve_JointPositions(legs(j).linkParams, Q(:,i,j));
 
-            P(3,:) = P(3,:) + 50;
+            % append the origin of the body
+            P = [ [0;0;0], P];
 
-            % append the origin
-            P = [ [0;0;50], P];
+            % rotate into world frame
+            P = R_WB * P + p_WB; 
             
             for k = 1:nJoints
                 plot3([P(1,k) P(1,k+1)], ...

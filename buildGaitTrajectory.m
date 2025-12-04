@@ -1,4 +1,6 @@
-function trajectory = buildGaitTrajectory(wayPointTimes, bodyHeight, footLiftHeight, stepLength, footSweepDist, footDistFromCoxa, linkParams)
+function trajectory = buildGaitTrajectory(wayPointTimes, ...
+                                footLiftHeight, stepLength, footSweepDist, ...
+                                footDistFromCoxa, linkParams)
     wayPointTimes = wayPointTimes(:);
     if length(wayPointTimes) ~= 5
         error('This version of buildGaitTrajectory is hard-coded for 5 waypoints.');
@@ -21,7 +23,7 @@ function trajectory = buildGaitTrajectory(wayPointTimes, bodyHeight, footLiftHei
     y_swing  = y_stance + footSweepDist*sign(coxaPos(2));
     y_wps    = [y_stance; y_stance; y_swing; y_stance; y_stance];
 
-    z_stance = -bodyHeight;
+    z_stance = 0;
     z_swing  = z_stance + footLiftHeight;
     z_wps    = [z_stance; z_stance; z_swing; z_stance; z_stance];
 
