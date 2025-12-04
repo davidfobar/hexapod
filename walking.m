@@ -32,11 +32,12 @@ bodyRPY = zeros(3,nTimeSteps);
 
 %raise height from 20 to 50 and gradually roll during motion
 z_mean = 50;
-z_amp  = 5;
+z_amp  = 0;
 for i = 1:nTimeSteps
     t_local = mod(ts(i), totalTime);
     bodyPos(3,i) = z_mean + z_amp * sin(2*pi*(t_local/totalTime));
     bodyRPY(:,i) = [5*pi/180 * sin(2*pi*ts(i)/totalTime); 0;0;];
+    bodyRPY(:,i) = [0;0;0;];
 end
 
 
@@ -52,7 +53,6 @@ tripodB     = [2 4 6];
 phaseOffset = totalTime/2;
 
 % define gait parameters
-bodyHeight       = 50;
 footLiftHeight   = 40;
 stepLength       = 100;
 footSweepDist    = 40;
